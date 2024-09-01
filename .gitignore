@@ -1,0 +1,13 @@
+**/.venv
+**/venv
+**/.vscode
+**/__pycache__
+**/DB
+**/log
+**/backups
+tester.py
+h.py
+.log
+enabled
+global-settings.json
+req.txt

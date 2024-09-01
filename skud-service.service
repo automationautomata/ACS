@@ -1,0 +1,12 @@
+[Unit]
+After=default.target
+Description=Python SKUD Service
+
+[Service]
+Restart=no
+# Command to execute when the service is started
+ExecStart=/usr/bin/python3 service.py 
+
+[Install]
+# Make it accessible to other users
+WantedBy = multi-user.target 

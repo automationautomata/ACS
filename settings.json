@@ -1,0 +1,4 @@
+{
+    "ROOM_PORT_MAP": {"0": "/dev/ttyACM0"}, 
+    "PORT": 9092
+}
