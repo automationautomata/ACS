@@ -40,15 +40,15 @@ The pyvistaqt module.
 #useradd -r {%mod_name}_user
 echo -e "{%mod_name}_user"
 
-mkdir -p %buildroot/bin/
-
-mkdir -p /var/lib/skud
+#mkdir -p %buildroot/bin/
+#mkdir -p /var/lib/skud
                
 echo -e "%buildroot"
 echo -e "%_sysconfdir"
-
-install -Dm0644 %mod_name %buildroot/bin/
-
+echo -e "%buildroot%_sysconfdir"
+pwd 
+ls -al
+cp skud /usr/bin
 mkdir -p %buildroot%_sysconfdir/systemd/user/
 
 cp %name-service.service %buildroot%_sysconfdir/systemd/user/

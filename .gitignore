@@ -7,7 +7,7 @@
 **/backups
 tester.py
 h.py
-.log
+*.log
 enabled
 global-settings.json
 req.txt

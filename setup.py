@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup
 
-package_name = 'pyvistaqt'
+package_name = 'skud'
 req = '''certifi==2024.7.4
 charset-normalizer==3.3.2
 click==8.1.7
@@ -25,7 +25,7 @@ urllib3==2.2.2'''.split('\n')
 print(req)
 setup(
     name=package_name,
-    packages=[package_name, package_name],
+    packages=["SKUD", "SKUD"],
     description='SKUD',
     license='MIT',
     python_requires='>=3.7',

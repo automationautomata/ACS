@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import json
 import os
 import click
@@ -145,5 +143,5 @@ def clear_all():
 
 ##### Wiegand ######
 
-if __name__ == '__main__':
-    cli()
+# if __name__ == '__main__':
+#     cli()
