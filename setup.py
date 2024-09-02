@@ -25,10 +25,13 @@ urllib3==2.2.2'''.split('\n')
 print(req)
 setup(
     name=package_name,
-    packages=["SKUD", "SKUD"],
+    packages=["SKUD", "SKUD.hardware", "SKUD.controllers", "SKUD.general", 
+              "SKUD.remote", "SKUD.ORM", "SKUD.dbscripts"],
+    include_package_data=True,
+    package_data = {"SKUD.dbscripts": ["*.sql"]},
     description='SKUD',
     license='MIT',
-    python_requires='>=3.7',
+    #python_requires='>=3.7',
     setup_requires=["setuptools>=45", "setuptools_scm>=6.2"],
     install_requires=req
 )

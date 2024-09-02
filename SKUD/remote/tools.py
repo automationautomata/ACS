@@ -1,9 +1,8 @@
 import json
-from abc import ABC
 from tornado.websocket import WebSocketHandler
 from typing import Any, Callable, Protocol
     
-from general.singleton import Singleton
+from SKUD.general.singleton import Singleton
 
 class Answer:
     '''Класс для хранения ответа на сообщение'''

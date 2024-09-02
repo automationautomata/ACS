@@ -1,5 +1,5 @@
-from ORM.database import DatabaseConnection
-from ORM.tables import RemoteSessions, VisitsHistory
+from SKUD.ORM.database import DatabaseConnection
+from SKUD.ORM.tables import RemoteSessions, VisitsHistory
 
 class VisitLogger(DatabaseConnection):
     '''Класс для установки соединения с БД посещений'''

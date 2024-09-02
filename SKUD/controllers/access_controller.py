@@ -1,11 +1,11 @@
 import json
 import logging
 
-from ORM.database import DatabaseConnection
-from ORM.tables import VisitsHistory
-from ORM.loggers import VisitLogger
-from remote.tools import WebsoketClients
-from hardware.setting import arduions_configuring
+from SKUD.ORM.database import DatabaseConnection
+from SKUD.ORM.tables import VisitsHistory
+from SKUD.ORM.loggers import VisitLogger
+from SKUD.remote.tools import WebsoketClients
+from SKUD.hardware.arduino import arduions_configuring
 
 class AccessController:
     '''Класс для управления несолькими ардуино и взаимодействия с БД'''

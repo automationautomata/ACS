@@ -2,11 +2,13 @@ import json
 import logging
 from typing import Callable
 import tornado
-from ORM.database import DatabaseConnection
-from ORM.templates import condition_query, sort_query, \
-                          insert, update
-from remote.tools import Answer
-from .auth_controller import Tokens
+
+from SKUD.ORM.database import DatabaseConnection
+from SKUD.remote.tools import Answer
+from SKUD.ORM.templates import condition_query, sort_query, \
+                               insert, update
+
+from SKUD.controllers.auth_controller import Tokens
 
 
 class UiController:

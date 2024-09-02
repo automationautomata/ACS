@@ -3,11 +3,11 @@ import logging
 from random import randint 
 from datetime import datetime, timedelta
 
-from ORM.database import DatabaseConnection
-from ORM.loggers import VisitLogger
-from ORM.templates import condition_query
-from general.singleton import Singleton
-from remote.server import Answer
+from SKUD.ORM.database import DatabaseConnection
+from SKUD.ORM.loggers import VisitLogger
+from SKUD.ORM.templates import condition_query
+from SKUD.general.singleton import Singleton
+from SKUD.remote.server import Answer
 
 class Tokens(Singleton):
     '''Класс для хранения токенов сессий'''

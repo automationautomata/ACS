@@ -4,7 +4,7 @@ import sqlite3
 import os
 import threading
 
-from general.singleton import Singleton
+#from SKUD.general.singleton import Singleton
 
 # Шаблон класса для установки соединений с БД
 class DatabaseABC(ABC):

@@ -3,7 +3,8 @@ import threading
 import serial, serial.tools.list_ports
 from typing import Callable
 from threading import Thread
-from hardware.arduino import ArduinoCommunicator
+
+from SKUD.hardware.arduino import ArduinoCommunicator
 
 
 def getportsinfo() -> str:

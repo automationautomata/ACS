@@ -1,23 +1,22 @@
 import json
-import logging
-from multiprocessing import Process
 import os
-from threading import Thread
-from pydbus import SessionBus
+import logging
 import time
-from controllers.auth_controller import AuthenticationController
-from controllers.access_controller import AccessController
-from controllers.ui_controller import SkudQueryHandler, UiController
-
-from remote.server import create_tornado_server
-from ORM.database import DatabaseConnection
-from ORM.loggers import VisitLogger
-
-from general.config import (ROOT_DIR, DB_DIR, BACKUP_DIR, ENABLED_PATH, GLOBAL_SETTINGS_PATH,
-                            SKUD_SCRIPT_PATH, SKUD_DB_NAME, 
-                            VISITS_SCRIPT_PATH, VISITS_DB_NAME)
-
 import psutil
+from multiprocessing import Process
+# from threading import Thread
+# from pydbus import SessionBus
+from SKUD.controllers.auth_controller import AuthenticationController
+from SKUD.controllers.access_controller import AccessController
+from SKUD.controllers.ui_controller import SkudQueryHandler, UiController
+
+from SKUD.remote.server import create_tornado_server
+from SKUD.ORM.database import DatabaseConnection
+from SKUD.ORM.loggers import VisitLogger
+
+from .general.config import (SKUD_DIR, DB_DIR, BACKUP_DIR, ENABLED_PATH, GLOBAL_SETTINGS_PATH,
+                                 SKUD_SCRIPT_PATH, SKUD_DB_NAME, VISITS_SCRIPT_PATH, VISITS_DB_NAME)
+
 
 backup_path = os.getcwd()
 backup = logging.getLogger("skud-service-backup")
@@ -80,7 +79,7 @@ def start(settings, name):
 
 
 backup.info("sqq "+GLOBAL_SETTINGS_PATH)
-backup.info("ROOT_DIR "+ROOT_DIR)
+backup.info("ROOT_DIR "+SKUD_DIR)
 
 processes: list[Process] = []
 try:

@@ -2,8 +2,8 @@ import json
 import os
 import click
 
-from general.config import (ENABLED_PATH, GLOBAL_SETTINGS_PATH, 
-                            DB_DIR, BACKUP_DIR, SETTINGS_KEYS)
+from .general.config import (ENABLED_PATH, GLOBAL_SETTINGS_PATH, 
+                                 DB_DIR, BACKUP_DIR, SETTINGS_KEYS)
 
 @click.group(chain=True)
 def cli(): pass

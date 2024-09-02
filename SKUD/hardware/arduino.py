@@ -89,4 +89,3 @@ class ArduinoCommunicator:
     def close(self) -> None: 
         '''Закрывает соединение'''
         self.connection.close()
-

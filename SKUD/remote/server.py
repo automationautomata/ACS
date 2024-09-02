@@ -4,7 +4,7 @@ from typing import Any, Callable
 import tornado
 from tornado.websocket import WebSocketHandler
 
-from remote.tools import Actions, Answer, WebsoketClients
+from SKUD.remote.tools import Actions, Answer, WebsoketClients
 
 
 class AuthenticationHandler(tornado.web.RequestHandler):
