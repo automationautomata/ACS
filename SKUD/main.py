@@ -2,7 +2,7 @@ import json
 import os
 import click
 
-from .general.config import (ENABLED_PATH, GLOBAL_SETTINGS_PATH, 
+from SKUD.general.config import (ENABLED_PATH, GLOBAL_SETTINGS_PATH, 
                                  DB_DIR, BACKUP_DIR, SETTINGS_KEYS)
 
 @click.group(chain=True)
@@ -50,16 +50,17 @@ def clear_place(name, backup):
     help="Вывод вместе с настройками.",
     is_flag=True, flag_value=True
 )
-
 def show_place(running, info):
     '''Выводит спосок мест'''
     try:
-        backups = []#os.listdir(BACKUP_DIR)
+        backups = os.listdir(BACKUP_DIR)
             
         path = ENABLED_PATH if running else GLOBAL_SETTINGS_PATH
         with open(path, "r+") as file:
             if running: 
                 places = file.read().split('\n')
+                if len(places) == 0 and places[-1] == '':
+                    places = places[0:-1]
             else: places = json.loads(file.read())
             if not info:
                 showed = map(lambda p: p if p in backups else f"\033[4m{p}\033[0m", places)
@@ -91,7 +92,7 @@ def create(name, settings_path, debug):
     '''Запустить СКУД с названием name или создать с его, если он не существует 
     
     settings_path - путь к файлу с настройками СКУДа,
-    debug - Вывод дополнительной инфоррмации на экран.    
+    debug - Вывод дополнительной инфоррмации на экран.
 
     
     Пример содержания файла с настройками:\n\r
@@ -116,7 +117,7 @@ def create(name, settings_path, debug):
             else: globals_settings = {}
             globals_settings[name] = settings
             file.seek(0)
-            file.write(json.dumps(globals_settings))
+            file.write(json.dumps(globals_settings)+'\n')
             file.truncate()
     except BaseException as error:
         click.echo("Settings error")
@@ -130,30 +131,31 @@ def create(name, settings_path, debug):
 @click.option("--all", type=bool, help="Для всех пользователей.",
     is_flag=True, flag_value=True
 )
-def start(names, all=False):
+@click.option("--service", type=bool, help="Запустить сервис.",
+    is_flag=True, flag_value=True
+)
+def start(names, all, service):
     try:
         if all and len(names) == 0:
             with open(GLOBAL_SETTINGS_PATH, "w+") as file:
                 globals_settings: dict = json.loads(file.read())
-            enabled = globals_settings.keys()
-        elif names == "": 
+                names = globals_settings.keys()
+        elif len(names) == 0: 
             click.echo("Empty list of places.")
             return
-        else:
-            enabled = names
-
-        click.echo(enabled)
+        
         with open(ENABLED_PATH, "w+") as file:
             file.seek(0)
-            file.write('\n'.join(names))
+            file.write('\n'.join(names)+'\n')
             file.truncate()
 
-        try: from systemd_service import Service
-        except: from general.sysd import Service
-        daemon = Service("skud-service")
-        try: daemon.enable()
-        except: pass
-        daemon.restart()
+        if service:
+            try: from systemd_service import Service
+            except: from SKUD.general.sysd import Service
+            daemon = Service("skud-service")
+            try: daemon.enable()
+            except: pass
+            daemon.restart()
     except BaseException as error:
         click.echo("Start error")
         click.echo(error)

@@ -1,4 +1,4 @@
-#/home/YOUR_USER/hasher/repo/x86_64/RPMS.hasher
+#/home/YOUR_USER/hasher/x86_64/RPMS.hasher
 %define pypi_name skud
 %define mod_name %pypi_name
 
@@ -45,14 +45,14 @@ mkdir -p %buildroot%_bindir
 cp skud %buildroot%_bindir/
 
 #export PYTHONPATH=%_sourcedir
-mkdir -p %buildroot%_sysconfdir/systemd/user/
+mkdir -p %buildroot%_sysconfdir/systemd/system/
 
-cp %name-service.service %buildroot%_sysconfdir/systemd/user/
+cp %name-service.service %buildroot%_sysconfdir/systemd/system/
 
 %files 
 %python3_sitelibdir_noarch/
 %{_bindir}/skud
-%_sysconfdir/systemd/user/
+%_sysconfdir/systemd/system/
 %{_sysconfdir}/skud/enabled
 %{_sysconfdir}/skud/global-settings.json
 

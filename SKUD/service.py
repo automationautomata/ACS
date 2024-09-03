@@ -14,7 +14,7 @@ from SKUD.remote.server import create_tornado_server
 from SKUD.ORM.database import DatabaseConnection
 from SKUD.ORM.loggers import VisitLogger
 
-from .general.config import (SKUD_DIR, DB_DIR, BACKUP_DIR, ENABLED_PATH, GLOBAL_SETTINGS_PATH,
+from SKUD.general.config import (SKUD_DIR, DB_DIR, BACKUP_DIR, ENABLED_PATH, GLOBAL_SETTINGS_PATH,
                                  SKUD_SCRIPT_PATH, SKUD_DB_NAME, VISITS_SCRIPT_PATH, VISITS_DB_NAME)
 
 
