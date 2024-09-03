@@ -14,6 +14,7 @@ def cli(): pass
 @click.option("-b", "--backup", type=bool,
     help="Удалить вместе с бекапами.",
     is_flag=True, flag_value=True
+    
 )
 def clear_place(name, backup): 
     '''Удаляет БД места с названием name'''
@@ -45,20 +46,34 @@ def clear_place(name, backup):
     help="Вывод работающих на данный момент.",
     is_flag=True, flag_value=True
 )
-def show_place(running):
+@click.option("-i", "--info", type=bool,
+    help="Вывод вместе с настройками.",
+    is_flag=True, flag_value=True
+)
+
+def show_place(running, info):
     '''Выводит спосок мест'''
     try:
-        backups = os.listdir(BACKUP_DIR)
-         
+        backups = []#os.listdir(BACKUP_DIR)
+            
         path = ENABLED_PATH if running else GLOBAL_SETTINGS_PATH
         with open(path, "r+") as file:
             if running: 
                 places = file.read().split('\n')
-            else: places = json.loads(file.read()).keys()
-        
-        click.echo(' '.join(place if place in backups else "\033[4m" + place + "\033[0m" for place in places))
-        click.echo()
-        click.echo("places without backup was underlined")
+            else: places = json.loads(file.read())
+            if not info:
+                showed = map(lambda p: p if p in backups else f"\033[4m{p}\033[0m", places)
+                click.echo(' '.join(showed))
+            else:
+                if running:
+                    with open(GLOBAL_SETTINGS_PATH, "r+") as file2:
+                        settings = json.loads(file2.read())
+                        places = {p:s for p, s in settings if p in places}
+                fmt = lambda p: fmt if p in backups else f"\033[4m{p}\033[0m"
+                showed = map(lambda p: f"{fmt(p)}: \n\t ROOM_PORT_MAP: {places[p]['ROOM_PORT_MAP']} \n\t PORT: {places[p]['PORT']}", places)
+                click.echo('\n'.join(showed))
+            click.echo()
+            click.echo("Places without backup was underlined")
     except BaseException as error:
         click.echo(f"\nERROR: {error}\n")
 
@@ -73,9 +88,17 @@ def show_place(running):
     is_flag=True, flag_value=True
 )
 def create(name, settings_path, debug):
-    '''Запустить СКУД с названием name или создать с его, если он не существует \n
-        settings_path - путь к файлу с настройками СКУДа, \n
-        debug - Вывод дополнительной инфоррмации на экран.'''
+    '''Запустить СКУД с названием name или создать с его, если он не существует 
+    
+    settings_path - путь к файлу с настройками СКУДа,
+    debug - Вывод дополнительной инфоррмации на экран.    
+
+    
+    Пример содержания файла с настройками:\n\r
+    { \n\r
+        "ROOM_PORT_MAP": {"0": "/dev/ttyACM0"},\n\r
+        "PORT": 9092\n\r
+    }'''    
     if not settings_path: return
  
     try:
