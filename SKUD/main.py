@@ -89,7 +89,7 @@ def show_place(running, info):
     is_flag=True, flag_value=True
 )
 def create(name, settings_path, debug):
-    '''Запустить СКУД с названием name или создать с его, если он не существует 
+    '''Создать СКУД с для места name или создать с его, если он не существует 
     
     settings_path - путь к файлу с настройками СКУДа,
     debug - Вывод дополнительной инфоррмации на экран.

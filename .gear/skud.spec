@@ -45,14 +45,14 @@ mkdir -p %buildroot%_bindir
 cp skud %buildroot%_bindir/
 
 #export PYTHONPATH=%_sourcedir
-mkdir -p %buildroot%_sysconfdir/systemd/system/
+mkdir -p %buildroot%_libexecdir/systemd/system/
 
 cp %name-service.service %buildroot%_sysconfdir/systemd/system/
 
 %files 
 %python3_sitelibdir_noarch/
 %{_bindir}/skud
-%_sysconfdir/systemd/system/
+%_libexecdir/systemd/system/
 %{_sysconfdir}/skud/enabled
 %{_sysconfdir}/skud/global-settings.json
 
