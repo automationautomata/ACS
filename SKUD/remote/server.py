@@ -54,7 +54,6 @@ def create_tornado_server(port: int,
     if ws_actions: 
         handlers.append((r"/wss", Websoket, dict(actions=ws_actions)))
     
-
     app = tornado.web.Application(handlers)
     
     app.listen(port)

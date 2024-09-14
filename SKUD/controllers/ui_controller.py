@@ -4,6 +4,7 @@ from typing import Callable
 import tornado
 
 from SKUD.ORM.database import DatabaseConnection
+from SKUD.SKUD.general.exeption_handler import ExceptionHandler
 from SKUD.remote.tools import Answer
 from SKUD.ORM.templates import condition_query, sort_query, \
                                insert, update
@@ -12,79 +13,86 @@ from SKUD.controllers.auth_controller import Tokens
 
 
 class UiController:
-    def __init__(self, skud_db: DatabaseConnection, logger: logging.Logger = None) -> None:
+    exception_handler = None,
+    def __init__(self, skud_db: DatabaseConnection, exception_handler: ExceptionHandler,
+                 logger: logging.Logger = None) -> None:
         '''`skud_db` - соединение с БД СКУДа, `logger` - логгер'''
         self.skud_db = skud_db
         self.skud_db.establish_connection()
         self.logger = logger
 
         self.tokens = Tokens()
+        UiController.exception_handler = exception_handler
 
+    @exception_handler.handle_exeption(Answer([], ""))
     def table_query(self, table: str, data: str, is_null: False) -> Answer:
         '''Запрос к таблице `table`, `data` - параметры запроса. возвращает ответ Answer, где data - спиоск'''
-        try: 
-            params = json.loads(data)
-            col_names = self.skud_db.table_cols(table)
-            interval = (params["start"], 100 + params["start"])
-            if is_null:
-                table = condition_query(table, col_names, "date_time_end IS NOT NULL")
+        # try: 
+        params = json.loads(data)
+        col_names = self.skud_db.table_cols(table)
+        interval = (params["start"], 100 + params["start"])
+        if is_null:
+            table = condition_query(table, col_names, "date_time_end IS NOT NULL")
 
-            sql = sort_query(table, col_names, interval,
-                             params["order_column"], params["order_type"])
-            
-            res = self.skud_db.execute_query(sql)
-            return Answer(self.skud_db.rows_to_dicts(col_names, res), "")
-        except BaseException as error:
-            if self.logger:
-                self.logger.warning(f"{error}; In UiController.table_query with table = {table} and data = {data}")
-            return Answer([], str(error))
+        sql = sort_query(table, col_names, interval,
+                            params["order_column"], params["order_type"])
+        
+        res = self.skud_db.execute_query(sql)
+        return Answer(self.skud_db.rows_to_dicts(col_names, res), "")
+        # except BaseException as error:
+        #     if self.logger:
+        #         self.logger.warning(f"{error}; In UiController.table_query with table = {table} and data = {data}")
+        #     return Answer([], str(error))
     
+    @exception_handler.handle_exeption(Answer([], ""))
     def table_insert(self, table: str, values: str) -> Answer:
         '''Запрос к таблице `table`, `data` - параметры запроса. возвращает ответ Answer, где data - спиоск'''
-        try: 
-            inserted_vals: dict = json.loads(values)
-            col_names = []
-            vals = []
-            for key, val in inserted_vals:
-                col_names.append(key)
-                vals.append(val)
-            sql = insert(table, col_names)
-            res = self.skud_db.execute_query(sql, *vals)
-            print(res)
-            return Answer("", "")
-        except BaseException as error:
-            if self.logger:
-                self.logger.warning(f"{error}; In UiController.table_query with table = {table} and data = {values}")
-            return Answer([], str(error))
+        # try: 
+        inserted_vals: dict = json.loads(values)
+        col_names = []
+        vals = []
+        for key, val in inserted_vals:
+            col_names.append(key)
+            vals.append(val)
+        sql = insert(table, col_names)
+        res = self.skud_db.execute_query(sql, *vals)
+        print(res)
+        return Answer("", "")
+        # except BaseException as error:
+        #     if self.logger:
+        #         self.logger.warning(f"{error}; In UiController.table_query with table = {table} and data = {values}")
+        #     return Answer([], str(error))
 
+    @exception_handler.handle_exeption(Answer([], ""))
     def table_update(self, table: str, data: str) -> Answer:
         '''Запрос к таблице `table`, `data` - параметры запроса. возвращает ответ Answer, где data - спиоск'''
-        try: 
-            updated: dict = json.loads(data)
-            col_names = []
-            vals = []
-            for key, val in updated["values"]:
-                col_names.append(key)
-                vals.append(val)
-            pk = self.skud_db.table_pk("table")
-            key = updated["key"]
-            sql = update(table, col_names, f"{pk} = {key}")
-            res = self.skud_db.execute_query(sql)
-            print(res)  
-            return Answer("", "")
-        except BaseException as error:
-            if self.logger:
-                self.logger.warning(f"In UiController.table_query with table = {table} and data = {data}")
-            return Answer([], str(error))
+        # try: 
+        updated: dict = json.loads(data)
+        col_names = []
+        vals = []
+        for key, val in updated["values"]:
+            col_names.append(key)
+            vals.append(val)
+        pk = self.skud_db.table_pk("table")
+        key = updated["key"]
+        sql = update(table, col_names, f"{pk} = {key}")
+        res = self.skud_db.execute_query(sql)
+        print(res)  
+        return Answer("", "")
+        # except BaseException as error:
+        #     if self.logger:
+        #         self.logger.warning(f"In UiController.table_query with table = {table} and data = {data}")
+        #     return Answer([], str(error))
 
+    @exception_handler.handle_exeption(Answer([], ""))
     def verify(self, **kwargs) -> bool:
         '''Проверяет '''
-        try:
-            return self.tokens.check_token(int(kwargs["token"]), int(kwargs["id"]))
-        except BaseException as error:
-            if self.logger:
-                self.logger.warning(f"{error}; In UiController.verify with data = {kwargs}")
-            return Answer([], str(error))
+        # try:
+        return self.tokens.check_token(int(kwargs["token"]), int(kwargs["id"]))
+        # except BaseException as error:
+        #     if self.logger:
+        #         self.logger.warning(f"{error}; In UiController.verify with data = {kwargs}")
+        #     return Answer([], str(error))
 
 class SkudQueryHandler(tornado.web.RequestHandler):
     '''Класс для обработки CRUD запросов к БД СКУДа'''

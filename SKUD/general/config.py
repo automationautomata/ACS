@@ -1,15 +1,25 @@
 # Глобальные константы для СКУДа
 
 from os.path import join, dirname
+from platform import system
 
 SKUD_DIR = dirname(dirname(__file__))
-'''Корневая папка.'''
+'''Корневая папка проекта.'''
 
-DATA_DIR = "/var/lib/skud"
-'''Корневая папка для дирктории с данными для СКУДа.'''
+if system() == "Windows":
+    DATA_DIR = join(SKUD_DIR, "skud")
+    '''Корневая папка для дирктории с данными для СКУДа.'''
 
-SETTINGS_DIR = "/etc/skud"
-'''Корневая папка для дирктории с данными для СКУДа.'''
+    SETTINGS_DIR = join(SKUD_DIR, "skud")
+    '''Корневая папка для дирктории с данными для СКУДа.'''
+elif system() == "Linux":
+    DATA_DIR = "/var/lib/skud"
+    '''Корневая папка для дирктории с данными для СКУДа.'''
+
+    SETTINGS_DIR = "/etc/skud"
+    '''Корневая папка для дирктории с данными для СКУДа.'''
+else:
+    raise NameError("Invalid platform")
 
 LOG_DIR = join(DATA_DIR, "log")
 '''Путь к папке для логов.'''

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from SKUD.ORM.database import DatabaseConnection
 from SKUD.ORM.loggers import VisitLogger
 from SKUD.ORM.templates import condition_query
+from SKUD.SKUD.general.exeption_handler import ExceptionHandler
 from SKUD.general.singleton import Singleton
 from SKUD.remote.server import Answer
 
@@ -37,8 +38,10 @@ class Tokens(Singleton):
         return False
         
 class AuthenticationController:
-    def __init__(self, remote_right: int, visits_db: VisitLogger, 
-                       skud_db: DatabaseConnection, Debug: bool = False,  logger: logging.Logger = None) -> None:
+    exception_handler = None
+
+    def __init__(self, remote_right: int, visits_db: VisitLogger, exception_handler: ExceptionHandler,
+                       skud_db: DatabaseConnection, Debug: bool = False) -> None:
         self.visits_db = visits_db
         self.skud_db = skud_db
         self.remote_right = remote_right
@@ -49,32 +52,33 @@ class AuthenticationController:
         sql = condition_query("access_rules", ["room"], f"right = {self.remote_right}")
         print(sql)
         self.remote_rooms = {row[0] for row in self.skud_db.execute_query(sql)}
-        self.logger = logger
+        AuthenticationController.exception_handler = exception_handler
 
+    @exception_handler.handle_exeption(Answer(0, ""))
     def authenticatior(self, data) -> Answer:  
-        try:
-            msg = json.loads(data)
-            if msg['id'] in self.remote_rooms:
-                sub_sql = condition_query("cards", ['*'], f"number = {msg['key']}")[0:-1]
-                sql = condition_query(f"entities inner join ({sub_sql}) as c on entities.card = c.id", ["c.number"], 
-                                     f"right = {self.remote_right}")
-                
-                card = self.skud_db.execute_query(sql) 
-                #### DEBUG ####
-                if self.Debug: print("data:", data, "number:", card)
-                if self.logger: self.logger.debug(f"data: {data}, card: {card}")
-
-                if len(card) == 1:
-                    token = self.tokens.add(msg['id'])
-                    return Answer(token, "")
-                return Answer(0, "Invalid card")
-            return Answer(0, "Invalid room")
-        
-        except BaseException as error:
-
+        # try:
+        msg = json.loads(data)
+        if msg['id'] in self.remote_rooms:
+            sub_sql = condition_query("cards", ['*'], f"number = {msg['key']}")[0:-1]
+            sql = condition_query(f"entities inner join ({sub_sql}) as c on entities.card = c.id", ["c.number"], 
+                                    f"right = {self.remote_right}")
+            
+            card = self.skud_db.execute_query(sql) 
             #### DEBUG ####
-            if self.Debug: print("ERROR:", str(error))
+            if self.Debug: print("data:", data, "number:", card)
+            if self.logger: self.logger.debug(f"data: {data}, card: {card}")
 
-            if self.logger:
-                self.logger.warning(f"{error}; In AuthenticationController.authenticatior with data = {data}")
-            return Answer(0, str(error))
+            if len(card) == 1:
+                token = self.tokens.add(msg['id'])
+                return Answer(token, "")
+            return Answer(0, "Invalid card")
+        return Answer(0, "Invalid room")
+        
+        # except BaseException as error:
+
+        #     #### DEBUG ####
+        #     if self.Debug: print("ERROR:", str(error))
+
+        #     if self.logger:
+        #         self.logger.warning(f"{error}; In AuthenticationController.authenticatior with data = {data}")
+        #     return Answer(0, str(error))
