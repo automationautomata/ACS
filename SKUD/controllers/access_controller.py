@@ -1,18 +1,22 @@
 import json
-import logging
+from logging import Logger
 
 from SKUD.ORM.database import DatabaseConnection
 from SKUD.ORM.tables import VisitsHistory
 from SKUD.ORM.loggers import VisitLogger
-from SKUD.SKUD.general.exeption_handler import ExceptionHandler
+from SKUD.general.exception_handler import exception_handler
+from SKUD.hardware.arduino import ArduinoCommunicator
 from SKUD.remote.tools import WebsoketClients
 from SKUD.hardware.tools import arduions_configuring
 
+type PortLoggerMap = dict[str, Logger]
+'''Ключ - порт, значение - логгер.'''
+
 class AccessController:
-    exception_handler = None
     '''Класс для управления несолькими ардуино и взаимодействия с БД'''
-    def __init__(self, skud: DatabaseConnection, ports: list[str], exception_handler: ExceptionHandler, visits_db: VisitLogger, 
-                 isdaemon: bool = True, Debug: bool = False) -> None:
+    logger: Logger = None
+    def __init__(self, skud: DatabaseConnection, ports: list[str], logger: Logger, visits_db: VisitLogger, 
+                 isdaemon: bool = True, Debug: bool = False, arduino_loggers: PortLoggerMap = None) -> None:
         '''`skud` - класс для соединения с БД скуда, `ports` - список портов, к которым подключены устройства, 
         `visits_db` - класс для соединения с БД инофрмации, полученной от устройств, 
         `logger` - класс для сохранения ошибок и дополнительной информации'''
@@ -20,13 +24,17 @@ class AccessController:
         self.skud.establish_connection()
         self.visits_db = visits_db
         self.visits_db.establish_connection()
-
         self.arduinos_therad, self.arduinos = arduions_configuring(ports, self.arduino_handler, isdaemon=isdaemon)
 
-        AccessController.exception_handler = exception_handler
+        AccessController.logger = logger
+
+        for port in arduino_loggers.keys() & self.arduinos.keys():
+            self.arduinos[port].logger = arduino_loggers[port]    
+
         self.Debug = Debug
 
-    @exception_handler.handle_exeption()
+
+    @exception_handler(logger)
     def arduino_handler(self, port: str, data: bytes, **kwargs) -> None:
         '''Обработчик приходящих с ардуино сообщений, `port` - порт, к которому подключено устройство, 
         `data` - полученные данные'''
@@ -52,7 +60,7 @@ class AccessController:
             
             #### DEBUG ####
             #if self.Debug: print(error)
-    @exception_handler.handle_exception()
+    @exception_handler(logger)
     def distribute_keys(self, room_port: dict[int, str]) -> None:
         '''Распределяет ключи по устройствам. `room_port` - словарь, где ключ - комната, а занчение - название порта'''
         sql = f'''SELECT entities.card, access_rules.room from entities INNER JOIN access_rules 

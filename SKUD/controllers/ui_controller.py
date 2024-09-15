@@ -4,7 +4,7 @@ from typing import Callable
 import tornado
 
 from SKUD.ORM.database import DatabaseConnection
-from SKUD.SKUD.general.exeption_handler import ExceptionHandler
+from SKUD.general.exception_handler import exception_handler
 from SKUD.remote.tools import Answer
 from SKUD.ORM.templates import condition_query, sort_query, \
                                insert, update
@@ -13,18 +13,17 @@ from SKUD.controllers.auth_controller import Tokens
 
 
 class UiController:
-    exception_handler = None,
-    def __init__(self, skud_db: DatabaseConnection, exception_handler: ExceptionHandler,
-                 logger: logging.Logger = None) -> None:
+    logger: logging.Logger = None
+    def __init__(self, skud_db: DatabaseConnection, logger: logging.Logger = None) -> None:
         '''`skud_db` - соединение с БД СКУДа, `logger` - логгер'''
         self.skud_db = skud_db
         self.skud_db.establish_connection()
         self.logger = logger
 
         self.tokens = Tokens()
-        UiController.exception_handler = exception_handler
+        UiController.logger = logger
 
-    @exception_handler.handle_exeption(Answer([], ""))
+    @exception_handler(logger, Answer([], ""))
     def table_query(self, table: str, data: str, is_null: False) -> Answer:
         '''Запрос к таблице `table`, `data` - параметры запроса. возвращает ответ Answer, где data - спиоск'''
         # try: 
@@ -44,7 +43,7 @@ class UiController:
         #         self.logger.warning(f"{error}; In UiController.table_query with table = {table} and data = {data}")
         #     return Answer([], str(error))
     
-    @exception_handler.handle_exeption(Answer([], ""))
+    @exception_handler(logger, Answer([], ""))
     def table_insert(self, table: str, values: str) -> Answer:
         '''Запрос к таблице `table`, `data` - параметры запроса. возвращает ответ Answer, где data - спиоск'''
         # try: 
@@ -56,14 +55,14 @@ class UiController:
             vals.append(val)
         sql = insert(table, col_names)
         res = self.skud_db.execute_query(sql, *vals)
-        print(res)
+        #print(res)
         return Answer("", "")
         # except BaseException as error:
         #     if self.logger:
         #         self.logger.warning(f"{error}; In UiController.table_query with table = {table} and data = {values}")
         #     return Answer([], str(error))
 
-    @exception_handler.handle_exeption(Answer([], ""))
+    @exception_handler(logger, Answer([], ""))
     def table_update(self, table: str, data: str) -> Answer:
         '''Запрос к таблице `table`, `data` - параметры запроса. возвращает ответ Answer, где data - спиоск'''
         # try: 
@@ -77,14 +76,14 @@ class UiController:
         key = updated["key"]
         sql = update(table, col_names, f"{pk} = {key}")
         res = self.skud_db.execute_query(sql)
-        print(res)  
+        #print(res)  
         return Answer("", "")
         # except BaseException as error:
         #     if self.logger:
         #         self.logger.warning(f"In UiController.table_query with table = {table} and data = {data}")
         #     return Answer([], str(error))
 
-    @exception_handler.handle_exeption(Answer([], ""))
+    @exception_handler(logger, Answer([], ""))
     def verify(self, **kwargs) -> bool:
         '''Проверяет '''
         # try:
@@ -104,7 +103,7 @@ class SkudQueryHandler(tornado.web.RequestHandler):
         return table in tables
 
     def get(self, table) -> None:
-        print("eee")
+        #print("eee")
         if not self.check(table): return
         headers = self.request.headers
         if self.controller.verify(token=headers.get("X-Auth"), id=headers.get("X-Id")):
@@ -113,9 +112,9 @@ class SkudQueryHandler(tornado.web.RequestHandler):
             if "NULL" in self.request.body_arguments.keys():
                 if self.get_body_argument("params") == "True": 
                     is_null = True
-            print(data, is_null)
+            #print(data, is_null)
             answer = self.controller.table_query(table, data, is_null)
-            print(answer.toJSON())
+            #print(answer.toJSON())
             self.write(answer.toJSON())
         
     def post(self, table) -> None:
@@ -124,7 +123,7 @@ class SkudQueryHandler(tornado.web.RequestHandler):
             table = self.get_argument()
             data = self.get_body_argument("values")
             answer = self.controller.table_insert(table, data)
-            print(answer.toJSON())
+            #print(answer.toJSON())
             self.write(answer.toJSON())
             
     def put(self, table) -> None:
@@ -133,7 +132,7 @@ class SkudQueryHandler(tornado.web.RequestHandler):
             table = self.get_argument()
             data = self.get_body_argument("data")
             answer = self.controller.table_insert(table, data)
-            print(answer.toJSON())
+            #print(answer.toJSON())
             self.write(answer.toJSON())
 
     def delete(self, table) -> None:

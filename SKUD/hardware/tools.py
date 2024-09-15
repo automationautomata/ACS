@@ -6,6 +6,8 @@ from threading import Thread
 
 from SKUD.hardware.arduino import ArduinoCommunicator
 
+type PortArduinoMap = dict[str, ArduinoCommunicator]
+'''Ключ - порт, значение - ArduinoCommunicator '''
 
 def getportsinfo() -> str:
     '''Возвращает информацию обо всех COM портах в json-подобном виде'''
@@ -26,12 +28,12 @@ def create_listeners_thread(arduinos: list[ArduinoCommunicator],
         await asyncio.gather(*tasks)
         print(f"Service {threading.get_native_id()} restarted.")
 
-    thread = Thread(target=lambda:asyncio.run(ini()), daemon=False)
+    thread = Thread(target=lambda:asyncio.run(ini()), daemon=isdaemon)
     print("ard thread", thread.daemon)
     return thread
 
 def arduions_configuring(ports: list[str], 
-                        handler: Callable[[bytes], str], isdaemon=True, handler_kwargs=None) -> tuple[Thread, dict[str, ArduinoCommunicator]]: 
+                        handler: Callable[[bytes], str], isdaemon=True, handler_kwargs=None) -> tuple[Thread, PortArduinoMap]: 
     '''Настройка группы адруино, подключенных к портам из `ports` и с обработчиком входных данных `handler`,
     `handler_kwargs` - его аргументы'''
     arduinos = {}

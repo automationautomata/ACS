@@ -12,12 +12,14 @@ if system() == "Windows":
 
     SETTINGS_DIR = join(SKUD_DIR, "skud")
     '''Корневая папка для дирктории с данными для СКУДа.'''
+
 elif system() == "Linux":
     DATA_DIR = "/var/lib/skud"
     '''Корневая папка для дирктории с данными для СКУДа.'''
 
     SETTINGS_DIR = "/etc/skud"
     '''Корневая папка для дирктории с данными для СКУДа.'''
+    
 else:
     raise NameError("Invalid platform")
 

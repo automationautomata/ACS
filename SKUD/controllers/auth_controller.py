@@ -1,12 +1,12 @@
 import json
-import logging
+from logging import Logger
 from random import randint 
 from datetime import datetime, timedelta
 
 from SKUD.ORM.database import DatabaseConnection
 from SKUD.ORM.loggers import VisitLogger
 from SKUD.ORM.templates import condition_query
-from SKUD.SKUD.general.exeption_handler import ExceptionHandler
+from SKUD.general.exception_handler import exception_handler
 from SKUD.general.singleton import Singleton
 from SKUD.remote.server import Answer
 
@@ -38,10 +38,10 @@ class Tokens(Singleton):
         return False
         
 class AuthenticationController:
-    exception_handler = None
-
-    def __init__(self, remote_right: int, visits_db: VisitLogger, exception_handler: ExceptionHandler,
-                       skud_db: DatabaseConnection, Debug: bool = False) -> None:
+    logger: Logger = None    
+    def __init__(self, remote_right: int, visits_db: VisitLogger,
+                       skud_db: DatabaseConnection, 
+                       logger: Logger=None, Debug: bool=False) -> None:
         self.visits_db = visits_db
         self.skud_db = skud_db
         self.remote_right = remote_right
@@ -50,11 +50,10 @@ class AuthenticationController:
         self.Debug = Debug
         self.skud_db.establish_connection()
         sql = condition_query("access_rules", ["room"], f"right = {self.remote_right}")
-        print(sql)
         self.remote_rooms = {row[0] for row in self.skud_db.execute_query(sql)}
-        AuthenticationController.exception_handler = exception_handler
+        AuthenticationController.logger = logger
 
-    @exception_handler.handle_exeption(Answer(0, ""))
+    @exception_handler(logger, Answer(0, ""))
     def authenticatior(self, data) -> Answer:  
         # try:
         msg = json.loads(data)
