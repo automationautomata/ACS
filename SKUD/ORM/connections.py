@@ -1,9 +1,9 @@
 from SKUD.ORM.database import DatabaseConnection
 from SKUD.ORM.tables import RemoteSessions, VisitsHistory
 
-class VisitLogger(DatabaseConnection):
-    '''Класс для установки соединения с БД посещений'''
 
+class VisitsConnection(DatabaseConnection):
+    '''Класс для установки соединения с БД посещений'''
     def addvisit(self, row: VisitsHistory):
         '''Добавляет запись в таблицу истории посещений комнат. `row` - добавляемая строка'''
         conn = self.threadsafe_connect()

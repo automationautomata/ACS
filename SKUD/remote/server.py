@@ -7,16 +7,6 @@ from tornado.websocket import WebSocketHandler
 from SKUD.remote.tools import Actions, Answer, WebsoketClients
 
 
-class AuthenticationHandler(tornado.web.RequestHandler):
-    '''Класс для аутентификации'''
-    def initialize(self, authenticatior: Callable[[str], Answer]):
-        self.authenticatior = authenticatior
-
-    def get(self) -> None:
-        answer = self.authenticatior(self.get_body_argument("auth"))
-        self.write(answer.toJSON())
-
-
 class Websoket(WebSocketHandler):
     def initialize(self, action: Actions) -> None:
         self.actions = action.actions_map()

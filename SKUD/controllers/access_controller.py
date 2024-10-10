@@ -3,11 +3,12 @@ from logging import Logger
 
 from SKUD.ORM.database import DatabaseConnection
 from SKUD.ORM.tables import VisitsHistory
-from SKUD.ORM.loggers import VisitLogger
+from SKUD.ORM.connections import VisitsConnection
 from SKUD.general.exception_handler import exception_handler
 from SKUD.hardware.arduino import ArduinoCommunicator
-from SKUD.remote.tools import WebsoketClients
 from SKUD.hardware.tools import arduions_configuring
+from SKUD.remote.tools import WebsoketClients
+
 
 type PortLoggerMap = dict[str, Logger]
 '''Ключ - порт, значение - логгер.'''
@@ -15,7 +16,7 @@ type PortLoggerMap = dict[str, Logger]
 class AccessController:
     '''Класс для управления несолькими ардуино и взаимодействия с БД'''
     logger: Logger = None
-    def __init__(self, skud: DatabaseConnection, ports: list[str], logger: Logger, visits_db: VisitLogger, 
+    def __init__(self, skud: DatabaseConnection, ports: list[str], logger: Logger, visits_db: VisitsConnection, 
                  isdaemon: bool = True, Debug: bool = False, arduino_loggers: PortLoggerMap = None) -> None:
         '''`skud` - класс для соединения с БД скуда, `ports` - список портов, к которым подключены устройства, 
         `visits_db` - класс для соединения с БД инофрмации, полученной от устройств, 
@@ -47,11 +48,11 @@ class AccessController:
             if "key" in msg.keys():
                 check = self.visits_db.addvisit(inserted_row)
                 if check:
-                    WebsoketClients().send(inserted_row.toJSON())
+                    WebsoketClients().send(inserted_row.to_json())
 
         #### DEBUG ####
         if self.Debug:
-            if inserted_row: print(port, inserted_row.toJSON())
+            if inserted_row: print(port, inserted_row.to_json())
             else: print(port, data)
 
         # except BaseException as error:

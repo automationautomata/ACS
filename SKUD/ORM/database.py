@@ -3,42 +3,24 @@ import logging
 import sqlite3
 import os
 import threading
+from typing import Callable, Self
 
-#from SKUD.general.singleton import Singleton
 
-# Шаблон класса для установки соединений с БД
-class DatabaseABC(ABC):
-    @abstractmethod
-    def establish_connection(self, rootpath: str) -> None:
-        pass
-    @abstractmethod
-    def establish_connection(self) -> None:
-        pass
-    # Метод для создания базы или, при ее утрате, восстановления
-    @abstractmethod
-    def _createdatabase_(self, path: str) -> None: 
-        pass
-    @abstractmethod
-    def execute_query(self, command: str, *params) -> None: 
-        pass
-    @abstractmethod
-    def close(self) -> None: 
-        pass
-
-class DatabaseConnection(DatabaseABC):
-    def __init__(self, scriptpath: str, name: str, dirpath: str = os.getcwd(), backup_path: str = os.path.join(os.getcwd(), "backup.log")) -> None:
+class DatabaseConnection:
+    def __init__(self, scriptpath: str, name: str, dirpath: str, backup_path: str, after_creation: Callable[[Self]] = None) -> None:
         '''`scriptpath` - путь к скрипту, создающему бд,
         `name` - название БД, `dirpath` - папка с БД, `backup_path` - путь к бекапу БД.'''
         self.__scriptpath = scriptpath
         self.path = os.path.join(dirpath, name)
         self._connections_ = {} #: dict[int, sqlite3.Connection] = {}
-        self.backup = logging.getLogger(f"{name}-backup")
+        self.after_creation = after_creation
 
+        self.backup = logging.getLogger(f"{name}-backup")
         self.backup.setLevel(logging.INFO)
         if not os.path.exists(backup_path):
             os.makedirs(backup_path)
-        fh = logging.FileHandler(os.path.join(backup_path, f"{name}-backup.log"))
 
+        fh = logging.FileHandler(os.path.join(backup_path, f"{name}-backup.log"))
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         fh.setFormatter(formatter)
         self.backup.addHandler(fh)
@@ -46,14 +28,17 @@ class DatabaseConnection(DatabaseABC):
     def threadsafe_connect(self) -> sqlite3.Connection:
         thread_id = threading.get_native_id()
         if thread_id not in self._connections_.keys():
-            print(self.path)
+            #print(self.path)
             self._connections_[thread_id] = sqlite3.connect(self.path)        
         try: 
             self._connections_[thread_id].cursor()
         except: 
             self._connections_[thread_id] = sqlite3.connect(self.path)
         return self._connections_[thread_id]
-
+    
+    def exists(self):
+        return os.path.isfile(self.path)
+            
     def establish_connection(self) -> None:
         '''Устанавливает соединение c базой и, если БД отсутствует,
         то пересоздает ее на основе указанного скрипта.'''
@@ -74,6 +59,8 @@ class DatabaseConnection(DatabaseABC):
             script = scriptfile.read()
             cursor.executescript(script)
             conn.commit()
+        if self.after_creation is not None: 
+            self.after_creation(self)
 
     def execute_query(self, command: str, *params) -> list[tuple]: 
         '''Выполняет указанную команду command с параметрами params (см. документацию SQLite).'''
@@ -109,9 +96,20 @@ class DatabaseConnection(DatabaseABC):
             print("rw", dict_row)
         return data
 
-    def close(self) -> None:
+    def closeall(self) -> None:
         '''Закрывает соединение с БД'''
         for key in self._connections_.keys():
             self._connections_[key].close()
             del self._connections_[key]
+
+    def close(self, key) -> bool:
+        if key in self._connections_:
+            try:
+                self._connections_[key].close()
+                del self._connections_[key]
+                return True
+            except:
+                return False 
+        return True
+    
     

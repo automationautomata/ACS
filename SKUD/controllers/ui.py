@@ -3,13 +3,12 @@ import logging
 from typing import Callable
 import tornado
 
-from SKUD.ORM.database import DatabaseConnection
 from SKUD.general.exception_handler import exception_handler
 from SKUD.remote.tools import Answer
-from SKUD.ORM.templates import condition_query, sort_query, \
-                               insert, update
+from SKUD.ORM.database import DatabaseConnection
+from SKUD.ORM.templates import condition_query, sort_query, insert, update
 
-from SKUD.controllers.auth_controller import Tokens
+from SKUD.controllers.authentication import Tokens
 
 
 class UiController:
@@ -93,6 +92,8 @@ class UiController:
         #         self.logger.warning(f"{error}; In UiController.verify with data = {kwargs}")
         #     return Answer([], str(error))
 
+
+
 class SkudQueryHandler(tornado.web.RequestHandler):
     '''Класс для обработки CRUD запросов к БД СКУДа'''
     def initialize(self, uicontroller: UiController) -> None:
@@ -114,8 +115,8 @@ class SkudQueryHandler(tornado.web.RequestHandler):
                     is_null = True
             #print(data, is_null)
             answer = self.controller.table_query(table, data, is_null)
-            #print(answer.toJSON())
-            self.write(answer.toJSON())
+            #print(answer.to_json())
+            self.write(answer.to_json())
         
     def post(self, table) -> None:
         headers = self.request.headers
@@ -123,8 +124,8 @@ class SkudQueryHandler(tornado.web.RequestHandler):
             table = self.get_argument()
             data = self.get_body_argument("values")
             answer = self.controller.table_insert(table, data)
-            #print(answer.toJSON())
-            self.write(answer.toJSON())
+            #print(answer.to_json())
+            self.write(answer.to_json())
             
     def put(self, table) -> None:
         headers = self.request.headers
@@ -132,15 +133,16 @@ class SkudQueryHandler(tornado.web.RequestHandler):
             table = self.get_argument()
             data = self.get_body_argument("data")
             answer = self.controller.table_insert(table, data)
-            #print(answer.toJSON())
-            self.write(answer.toJSON())
+            #print(answer.to_json())
+            self.write(answer.to_json())
 
     def delete(self, table) -> None:
         headers = self.request.headers
         if self.controller.verify(token=headers.get("X-Auth"), id=headers.get("X-Id")):
             answer = self.actions["put"](self.get_body_argument("data"))
             self.set_header("Content-Type", "text/plain")
-            self.write(answer.toJSON())
+            self.write(answer.to_json())
+            
 
 
 class UiVisitsController(UiController):

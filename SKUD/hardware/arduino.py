@@ -8,6 +8,7 @@ from logging import Logger
 
 from SKUD.general.exception_handler import exception_handler
 
+
 class ArduinoCommunicator:
     '''Класс для отправки данных на ардуино'''
     logger: Logger = None    

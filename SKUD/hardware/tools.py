@@ -6,6 +6,7 @@ from threading import Thread
 
 from SKUD.hardware.arduino import ArduinoCommunicator
 
+
 type PortArduinoMap = dict[str, ArduinoCommunicator]
 '''Ключ - порт, значение - ArduinoCommunicator '''
 

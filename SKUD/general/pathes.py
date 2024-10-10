@@ -49,6 +49,3 @@ GLOBAL_SETTINGS_PATH = join(SETTINGS_DIR, "global-settings.json")
 
 ENABLED_PATH = join(SETTINGS_DIR, "enabled")
 '''Список мест действующих на данный момент.'''
-
-SETTINGS_KEYS = {"ROOM_PORT_MAP", "PORT"}
-'''Ключи, которые должны быть в файле с настройками.'''

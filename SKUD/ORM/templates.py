@@ -1,4 +1,3 @@
-
 def sort_query(table: str, cols: list[str], interval: tuple[int, int], order_column: str, desc: bool):
     '''Формирует запрос для таблицы `table` и столбцов `cols`, который берет записи, отсортированные по `order_column` 
     в порядке убывания, если `dirction` - true, иначе в порядке возрастания.

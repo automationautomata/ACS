@@ -9,7 +9,7 @@ class Answer:
     def __init__(self, data: Any, error: str) -> None:
         self.data = data
         self.error = error
-    def toJSON(self) -> str:
+    def to_json(self) -> str:
         return json.dumps(self.__dict__)
     
 class Actions(Protocol):

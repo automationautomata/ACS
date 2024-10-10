@@ -4,28 +4,32 @@ CREATE TABLE cards (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     number INTEGER NOT NULL,
     isSabotaged VARCHAR(1) NOT NULL,
-    date_time_begin TEXT NOT NULL,
+    date_time_begin TEXT NOT NULL DEFAULT strftime('%Y-%m-%d %H:%M:%S', datetime('now')),
     date_time_end TEXT
 );
--- 0 - не саботирована, 1 - саботирована 
+-- isSabotaged 0 - не саботирована, 1 - саботирована 
 CREATE TABLE rooms (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     name TEXT NOT NULL,
-    date_time_begin TEXT NOT NULL,
+    isUI VARCHAR(1),
+    date_time_begin TEXT NOT NULL DEFAULT strftime('%Y-%m-%d %H:%M:%S', datetime('now')),
     date_time_end TEXT, 
     UNIQUE(name)
 );
+-- isAdmin 0 - не админка, 1 - админка 
 CREATE TABLE rights (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     name TEXT NOT NULL,
-    date_time_begin TEXT NOT NULL,
+    isAdmin VARCHAR(1),
+    date_time_begin TEXT NOT NULL DEFAULT strftime('%Y-%m-%d %H:%M:%S', datetime('now')),
     date_time_end TEXT
+    --UNIQUE(isAdmin)
 );
 CREATE TABLE access_rules (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     right INTEGER NOT NULL,
     room INTEGER NOT NULL,
-    date_time_begin TEXT NOT NULL,
+    date_time_begin TEXT NOT NULL DEFAULT strftime('%Y-%m-%d %H:%M:%S', datetime('now')),
     date_time_end TEXT,
     FOREIGN KEY(room) REFERENCES rooms(id),
     FOREIGN KEY(right) REFERENCES rights(id),
@@ -36,7 +40,8 @@ CREATE TABLE entities (
     sid INTEGER PRIMARY KEY NOT NULL,
     type VARCHAR(1) NOT NULL,
     right INTEGER NOT NULL,
-    date_time_begin TEXT NOT NULL,
+    isAdmin VARCHAR(1) NOT NULL,
+    date_time_begin TEXT NOT NULL DEFAULT strftime('%Y-%m-%d %H:%M:%S', datetime('now')),
     date_time_end TEXT,
     FOREIGN KEY(card) REFERENCES cards(id),
     FOREIGN KEY(right) REFERENCES rights(id)
@@ -56,6 +61,7 @@ AS select card,
           rights.date_time_end as rightDelDate, 
           entities.sid,
           entities.type,
+          entities.isAdmin,
           entities.date_time_begin as entityAddDate,
           entities.date_time_end as entityDelDate
             from entities inner join cards on cards.id = entities.card    
@@ -75,7 +81,9 @@ AS select access_rules.room,
             from access_rules inner join rooms on rooms.id = access_rules.room    
                         inner join rights on access_rules.right = rights.id;
 --------------------------------------------------------------------------------    
-
+INSERT into rights (name, isAdmin, date_time_begin) values ('deafult admin', 1, strftime('%Y-%m-%d %H:%M:%S', datetime('now')));
+                                                  --('employee',  strftime('%Y-%m-%d %H:%M:%S', datetime('now')));
+--------------------------------------------------------------------------------
 INSERT into cards (number, isSabotaged, date_time_begin) values (12, 0, strftime('%Y-%m-%d %H:%M:%S', datetime('now'))), 
                                                                 (15, 0, strftime('%Y-%m-%d %H:%M:%S', datetime('now')));             
 INSERT into rooms (name, date_time_begin) values ('office', strftime('%Y-%m-%d %H:%M:%S', datetime('now'))), 
@@ -92,6 +100,27 @@ INSERT into access_rules (right, room, date_time_begin) values (1, 1, strftime('
                                                                
 INSERT into entities (card, sid, type, right, date_time_begin) values (1, 1, 0, 1, strftime('%Y-%m-%d %H:%M:%S', datetime('now'))), 
                                                                       (2, 5, 0, 2, strftime('%Y-%m-%d %H:%M:%S', datetime('now')));
+
+CREATE TRIGGER check_remote_room_uniqueness_insert
+BEFORE INSERT OF right ON rights
+BEGIN
+    SELECT RAISE(ABORT, 'ADMIN ALREADY EXISTS') 
+        WHERE SELECT * FROM rights WHERE isAdmin = 1
+END;
+
+CREATE TRIGGER check_remote_room_uniqueness_update
+BEFORE UPDATE OF right ON rights
+BEGIN
+    IF SELECT * FROM new WHERE isAdmin = 1
+    BEGIN
+        SELECT RAISE(ABORT, 'ADMIN ALREADY EXISTS') 
+            WHERE SELECT * FROM rights WHERE isAdmin = 1
+    END
+    ELSE
+    BEGIN
+    
+    END
+END;
 -- CREATE TRIGGER subotaged_card_not_in_entities
 -- INSERT INSERT ON cards
 -- BEGIN
